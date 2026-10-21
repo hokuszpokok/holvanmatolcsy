@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Hol van Matolcsy?</title>
+<meta name="description" content="Elbújt a tömegben. Megtalálod? Keresd meg Matolcsyt, mielőtt lejár az idő!">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#14213d">
+
+<!-- Megosztási kép (Open Graph). Feltöltés után cseréld a BASE_URL-t a valódi címre! -->
+<meta property="og:type" content="website">
+<meta property="og:locale" content="hu_HU">
+<meta property="og:title" content="Hol van Matolcsy?">
+<meta property="og:description" content="Elbújt a tömegben. Megtalálod?">
+<meta property="og:url" content="https://matolcsyadam1234.github.io/whereismatolcsy/">
+<meta property="og:image" content="https://matolcsyadam1234.github.io/whereismatolcsy/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Hol van Matolcsy? – nagyító a tömeg felett">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Hol van Matolcsy?">
+<meta name="twitter:description" content="Elbújt a tömegben. Megtalálod?">
+<meta name="twitter:image" content="https://matolcsyadam1234.github.io/whereismatolcsy/og.png">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #1b1d24; color: #fff;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif; user-select: none; }
+  #game { display: block; position: fixed; inset: 0; width: 100%; height: 100%; cursor: grab; touch-action: none; }
+  #game.dragging { cursor: grabbing; }
+
+  #hud { position: fixed; top: calc(10px + env(safe-area-inset-top)); left: calc(10px + env(safe-area-inset-left));
+    right: calc(10px + env(safe-area-inset-right)); display: flex; gap: 10px;
+    align-items: center; pointer-events: none; flex-wrap: wrap; }
+  .pill { background: rgba(0,0,0,.65); border-radius: 999px; padding: 8px 14px; font-weight: 700;
+    font-size: 15px; backdrop-filter: blur(4px); pointer-events: auto; }
+  #wanted-mini { width: 44px; height: 58px; border-radius: 8px; object-fit: cover; border: 3px solid #e63946;
+    pointer-events: auto; cursor: pointer; }
+  .spacer { flex: 1; }
+  button { font: inherit; font-weight: 700; border: 0; border-radius: 999px; padding: 8px 14px;
+    background: #e63946; color: #fff; cursor: pointer; pointer-events: auto; }
+  button:hover { filter: brightness(1.1); }
+  button.ghost { background: rgba(0,0,0,.65); }
+
+  .overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+    background: rgba(10,10,15,.82); z-index: 10; padding: 16px; overflow-y: auto; }
+  .overlay.hidden { display: none; }
+  .card { background: #f4ecd8; color: #2b2118; border-radius: 14px; padding: 28px; max-width: 420px; width: 100%;
+    text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,.5); border: 6px double #7a5c3e; }
+  .card h1 { margin: 0 0 4px; font-size: 44px; letter-spacing: 4px; color: #a4161a; font-family: Georgia, serif; }
+  .card h2 { margin: 0 0 12px; font-family: Georgia, serif; }
+  .card img { width: 180px; height: 240px; object-fit: cover; border: 4px solid #2b2118; margin: 10px 0; }
+  .card p { margin: 8px 0; line-height: 1.4; }
+  .card button { margin-top: 10px; font-size: 18px; padding: 12px 26px; }
+
+  .poster { max-width: 900px; width: 100%; text-align: center; }
+  .poster img { width: 100%; max-height: 70vh; object-fit: contain; border-radius: 8px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.6); }
+  .poster p { margin: 10px 0; }
+  .poster button { margin-top: 6px; font-size: 18px; padding: 12px 26px; }
+
+  @media (max-width: 600px) {
+    #hud { gap: 6px; flex-wrap: nowrap; }
+    .pill { padding: 6px 10px; font-size: 13px; }
+    #wanted-mini { width: 34px; height: 45px; border-width: 2px; }
+    button.ghost { width: 40px; height: 40px; padding: 0; font-size: 20px; }
+    .poster p { font-size: 15px; }
+    .poster img { max-height: 55vh; }
+    .card { padding: 20px; }
+    .card h2 { font-size: 22px; }
+  }
+  @media (max-width: 380px) {
+    #score { display: none; }
+  }
+
+  #flash { position: fixed; pointer-events: none; font-weight: 900; font-size: 22px; color: #ff4d4d;
+    text-shadow: 0 2px 4px #000; transition: opacity .6s, transform .6s; opacity: 0; z-index: 5; }
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+
+<div id="hud">
+  <img id="wanted-mini" src="target.png" alt="Matolcsy" title="Körözési lap megjelenítése">
+  <div class="pill" id="level">1. szint</div>
+  <div class="pill" id="timer">⏱ 0,0 mp</div>
+  <div class="pill" id="score">0 pont</div>
+  <div class="spacer"></div>
+  <button class="ghost" id="zoom-in">＋</button>
+  <button class="ghost" id="zoom-out">－</button>
+</div>
+
+<div id="flash"></div>
+
+<div class="overlay" id="start">
+  <div class="poster">
+    <img src="wanted.png" alt="Körözött személy">
+    <p>Valahol elbújt a tömegben. Keresd meg és kattints az arcára!</p>
+    <p><small>Húzd a térképet · görgő / csípés / ＋－ a nagyításhoz · rossz kattintás +5 mp</small></p>
+    <button id="start-btn">Keresés indítása</button>
+  </div>
+</div>
+
+<div class="overlay hidden" id="found">
+  <div class="card">
+    <h2 id="found-title">Megvan!</h2>
+    <p id="found-text"></p>
+    <button id="next-btn">Következő szint</button>
+  </div>
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>
