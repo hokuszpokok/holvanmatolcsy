@@ -70,6 +70,10 @@
     for (let i = 0; i < nTrees; i++) scenery.push({ type: 'tree', x: rand(0, W), y: rand(40, H), s: rand(1.2, 2.2), c: pick(['#2d6a4f', '#40916c', '#1b4332', '#52b788']) });
     for (let i = 0; i < 12 + L * 6; i++) scenery.push({ type: 'umbrella', x: rand(0, W), y: rand(40, H), s: rand(1.3, 1.9), c: pick(SHIRT), c2: pick(SHIRT) });
     for (let i = 0; i < 6 + L * 3; i++) scenery.push({ type: 'tent', x: rand(0, W), y: rand(60, H), s: rand(1.5, 2.4), c: pick(SHIRT) });
+    for (let i = 0; i < 3 + L; i++) scenery.push({ type: 'villa', x: rand(160, W - 160), y: rand(180, H - 40), s: rand(1.9, 2.3), wood: pick(['#a0673a', '#7c4a2a', '#c08552', '#5b5b5b']), flip: chance(0.5) });
+    for (let i = 0; i < 2 + Math.floor(L / 2); i++) scenery.push({ type: 'dubai', variant: i % 2, x: rand(150, W - 150), y: rand(320, H - 40), s: rand(1.1, 1.35), flip: chance(0.5) });
+    const CAR_COLORS = ['#ffd60a', '#d62828', '#c0c4c8', '#111111', '#f8f9fa', '#1d4ed8', '#16a34a', '#f97316'];
+    for (let i = 0; i < 6 + L * 3; i++) scenery.push({ type: 'car', x: rand(60, W - 60), y: rand(60, H), s: rand(1.5, 1.8), c: pick(CAR_COLORS), flip: chance(0.5) });
     for (let i = 0; i < 10 + L * 4; i++) scenery.push({ type: 'balloons', x: rand(0, W), y: rand(60, H), s: rand(1.3, 1.7) });
 
     const n = 260 + L * 170;
@@ -208,6 +212,130 @@
       ctx.beginPath(); ctx.moveTo(x - 6 * s, y); ctx.lineTo(x, y - 16 * s); ctx.lineTo(x + 6 * s, y); ctx.closePath(); ctx.fill();
       ctx.strokeStyle = '#fff'; ctx.lineWidth = s; ctx.beginPath(); ctx.moveTo(x, y - 30 * s); ctx.lineTo(x, y - 38 * s); ctx.stroke();
       ctx.fillStyle = '#e63946'; ctx.fillRect(x, y - 38 * s, 7 * s, 4 * s);
+    } else if (o.type === 'villa') {
+      // modern flat-roof villa with glass walls and a pool, local units at s=1
+      ctx.save();
+      ctx.translate(x, y); ctx.scale(o.flip ? -s : s, s);
+      // pool + deck in front
+      ctx.fillStyle = '#e7dcc7'; ctx.fillRect(-82, -2, 120, 22);
+      ctx.fillStyle = '#38bdf8'; ctx.fillRect(-74, 2, 96, 14);
+      ctx.strokeStyle = '#bae6fd'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(-66, 7); ctx.lineTo(-40, 7); ctx.moveTo(-20, 11); ctx.lineTo(10, 11); ctx.stroke();
+      // ground floor
+      ctx.fillStyle = '#f5f1e8'; ctx.fillRect(-78, -46, 156, 46);
+      ctx.fillStyle = '#7dd3fc'; ctx.fillRect(-70, -40, 66, 36);
+      ctx.strokeStyle = '#334155'; ctx.lineWidth = 1.2;
+      ctx.strokeRect(-70, -40, 66, 36);
+      ctx.beginPath(); for (const mx of [-48, -26]) { ctx.moveTo(mx, -40); ctx.lineTo(mx, -4); } ctx.stroke();
+      ctx.fillStyle = o.wood; ctx.fillRect(4, -40, 66, 40);
+      ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.lineWidth = 0.8;
+      ctx.beginPath(); for (let ly = -36; ly < 0; ly += 4) { ctx.moveTo(4, ly); ctx.lineTo(70, ly); } ctx.stroke();
+      ctx.fillStyle = '#1f2937'; ctx.fillRect(48, -30, 14, 30); // front door
+      // upper floor, cantilevered
+      ctx.fillStyle = '#f5f1e8'; ctx.fillRect(-58, -82, 104, 36);
+      ctx.fillStyle = '#7dd3fc'; ctx.fillRect(-52, -76, 58, 24);
+      ctx.strokeStyle = '#334155'; ctx.lineWidth = 1.2; ctx.strokeRect(-52, -76, 58, 24);
+      ctx.beginPath(); ctx.moveTo(-23, -76); ctx.lineTo(-23, -52); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,.55)';
+      ctx.beginPath(); ctx.moveTo(-50, -76); ctx.lineTo(-42, -76); ctx.lineTo(-52, -60); ctx.closePath(); ctx.fill();
+      // roof slabs + balcony glass
+      ctx.fillStyle = '#374151';
+      ctx.fillRect(-64, -86, 116, 5);
+      ctx.fillRect(-84, -49, 168, 4);
+      ctx.fillStyle = 'rgba(186,230,253,.6)'; ctx.fillRect(10, -58, 34, 9);
+      // hedges
+      ctx.fillStyle = '#2d6a4f';
+      for (const hx of [-90, 84]) { ctx.beginPath(); ctx.arc(hx, -8, 9, 0, 7); ctx.arc(hx + (hx < 0 ? 6 : -6), -14, 7, 0, 7); ctx.fill(); }
+      ctx.restore();
+    } else if (o.type === 'dubai') {
+      // Dubai-style property: stepped needle skyscraper or sail-shaped hotel, palms and a sign
+      ctx.save();
+      ctx.translate(x, y); ctx.scale(o.flip ? -s : s, s);
+      ctx.fillStyle = '#f2e3c6'; ctx.beginPath(); ctx.ellipse(0, -2, 95, 10, 0, 0, 7); ctx.fill(); // sand plot
+      if (o.variant === 0) {
+        const tiers = [[34, 70], [26, 60], [19, 50], [13, 40], [8, 30]];
+        let top = -4;
+        for (let i = 0; i < tiers.length; i++) {
+          const [hw, h] = tiers[i];
+          const g = ctx.createLinearGradient(-hw, 0, hw, 0);
+          g.addColorStop(0, '#9fb7c9'); g.addColorStop(0.45, '#e8f1f7'); g.addColorStop(1, '#6f8ca3');
+          ctx.fillStyle = g; ctx.fillRect(-hw, top - h, hw * 2, h);
+          ctx.strokeStyle = 'rgba(40,60,80,.25)'; ctx.lineWidth = 0.8; ctx.beginPath();
+          for (let ly = top - 6; ly > top - h; ly -= 6) { ctx.moveTo(-hw, ly); ctx.lineTo(hw, ly); }
+          ctx.stroke();
+          top -= h;
+        }
+        ctx.strokeStyle = '#8aa1b3'; ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.moveTo(0, top); ctx.lineTo(0, top - 45); ctx.stroke(); // spire
+      } else {
+        // sail hotel
+        ctx.fillStyle = '#f8fafc';
+        ctx.beginPath(); ctx.moveTo(-30, -4); ctx.lineTo(-30, -230);
+        ctx.quadraticCurveTo(55, -150, 40, -4); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = 'rgba(100,116,139,.45)'; ctx.lineWidth = 1;
+        ctx.beginPath(); for (let ly = -20; ly > -210; ly -= 14) { ctx.moveTo(-30, ly); ctx.quadraticCurveTo(10, ly + 4, 40 - (ly / -230) * 6, ly + 10); } ctx.stroke();
+        ctx.fillStyle = '#475569'; ctx.fillRect(-36, -236, 8, 232); // mast
+        ctx.fillRect(-56, -150, 26, 4); // helipad arm
+        ctx.beginPath(); ctx.arc(-60, -150, 9, 0, 7); ctx.fill();
+        ctx.fillStyle = '#fbbf24'; ctx.beginPath(); ctx.arc(-60, -150, 5, 0, 7); ctx.fill();
+      }
+      // palms
+      for (const px of [-70, 72]) {
+        ctx.strokeStyle = '#8b5a2b'; ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.moveTo(px, -2); ctx.quadraticCurveTo(px + 6, -25, px + 2, -48); ctx.stroke();
+        ctx.fillStyle = '#2f9e44';
+        for (let k = 0; k < 6; k++) {
+          const a = (k / 6) * Math.PI * 2;
+          ctx.beginPath(); ctx.ellipse(px + 2 + Math.cos(a) * 11, -50 + Math.sin(a) * 5, 13, 3.5, a, 0, 7); ctx.fill();
+        }
+      }
+      // sign
+      ctx.fillStyle = '#6b4423'; ctx.fillRect(48, -26, 3, 24);
+      ctx.fillStyle = '#c9a227'; ctx.fillRect(30, -42, 40, 18);
+      ctx.save(); if (o.flip) { ctx.translate(50, 0); ctx.scale(-1, 1); ctx.translate(-50, 0); }
+      ctx.fillStyle = '#111'; ctx.font = 'bold 8px system-ui, sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('DUBAI', 50, -35); ctx.fillText('ELADÓ', 50, -27);
+      ctx.restore();
+      ctx.restore();
+    } else if (o.type === 'car') {
+      // low rear-engine sports coupé (911-style silhouette), side view, local units ≈ px at s=1
+      ctx.save();
+      ctx.translate(x, y); ctx.scale(o.flip ? -s : s, s);
+      ctx.fillStyle = 'rgba(0,0,0,.22)';
+      ctx.beginPath(); ctx.ellipse(0, 0, 54, 4, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = o.c;
+      ctx.beginPath();
+      ctx.moveTo(-54, -8);
+      ctx.lineTo(-55, -17);
+      ctx.quadraticCurveTo(-54, -24, -45, -26);
+      ctx.bezierCurveTo(-30, -29, -22, -41, -5, -41);
+      ctx.quadraticCurveTo(8, -41, 18, -28);
+      ctx.lineTo(40, -24);
+      ctx.quadraticCurveTo(53, -22, 55, -13);
+      ctx.lineTo(55, -8);
+      ctx.quadraticCurveTo(55, -5, 50, -5);
+      ctx.lineTo(-50, -5);
+      ctx.quadraticCurveTo(-54, -5, -54, -8);
+      ctx.closePath(); ctx.fill();
+      // windows
+      ctx.fillStyle = '#1f2937';
+      ctx.beginPath();
+      ctx.moveTo(-30, -28); ctx.bezierCurveTo(-24, -36, -14, -38, -5, -38);
+      ctx.quadraticCurveTo(5, -38, 13, -28); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = o.c; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(-6, -38); ctx.lineTo(-4, -28); ctx.stroke();
+      // door line, lights
+      ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = 0.8;
+      ctx.beginPath(); ctx.moveTo(-6, -27); ctx.lineTo(-4, -8); ctx.moveTo(16, -26); ctx.lineTo(16, -9); ctx.stroke();
+      ctx.fillStyle = '#fff7c2'; ctx.beginPath(); ctx.ellipse(47, -21, 3.5, 2.4, -0.3, 0, 7); ctx.fill();
+      ctx.fillStyle = '#e11d48'; ctx.fillRect(-55.5, -18, 3, 4);
+      // wheels
+      for (const wx of [-34, 34]) {
+        ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(wx, -6, 9, 0, 7); ctx.fill();
+        ctx.fillStyle = '#b8bec6'; ctx.beginPath(); ctx.arc(wx, -6, 5, 0, 7); ctx.fill();
+        ctx.fillStyle = '#6b7280'; ctx.beginPath(); ctx.arc(wx, -6, 1.6, 0, 7); ctx.fill();
+      }
+      ctx.restore();
     } else if (o.type === 'balloons') {
       const cols = ['#e63946', '#ffd60a', '#3a86ff', '#06d6a0', '#ff006e'];
       ctx.strokeStyle = '#555'; ctx.lineWidth = 0.6 * s;
@@ -249,7 +377,7 @@
     }
 
     // cull to viewport
-    const x0 = cam.x - 60, y0 = cam.y - 20, x1 = cam.x + vw / cam.zoom + 60, y1 = cam.y + vh / cam.zoom + 120;
+    const x0 = cam.x - 220, y0 = cam.y - 60, x1 = cam.x + vw / cam.zoom + 220, y1 = cam.y + vh / cam.zoom + 120;
     for (const o of state.drawList || []) {
       if (o.x < x0 || o.x > x1 || o.y < y0 || o.y > y1) continue;
       if (o.type) drawScenery(o); else drawPerson(o);
