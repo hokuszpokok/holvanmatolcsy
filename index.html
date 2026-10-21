@@ -16,7 +16,8 @@
 <meta property="og:title" content="Hol van Matolcsy?">
 <meta property="og:description" content="Elbújt a tömegben. Megtalálod?">
 <meta property="og:url" content="https://hokuszpokok.github.io/holvanmatolcsy/">
-<meta property="og:image" content="https://hokuszpokok.github.io/holvanmatolcsy/og.png">
+<meta property="og:image" content="https://hokuszpokok.github.io/holvanmatolcsy/og.gif">
+<meta property="og:image:type" content="image/gif">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Hol van Matolcsy? – nagyító a tömeg felett">
@@ -35,7 +36,7 @@
     right: calc(10px + env(safe-area-inset-right)); display: flex; gap: 10px;
     align-items: center; pointer-events: none; flex-wrap: wrap; }
   .pill { background: rgba(0,0,0,.65); border-radius: 999px; padding: 8px 14px; font-weight: 700;
-    font-size: 15px; backdrop-filter: blur(4px); pointer-events: auto; }
+    font-size: 15px; backdrop-filter: blur(4px); pointer-events: auto; white-space: nowrap; }
   #wanted-mini { width: 44px; height: 58px; border-radius: 8px; object-fit: cover; border: 3px solid #e63946;
     pointer-events: auto; cursor: pointer; }
   .spacer { flex: 1; }
@@ -63,9 +64,9 @@
 
   @media (max-width: 600px) {
     #hud { gap: 6px; flex-wrap: nowrap; }
-    .pill { padding: 6px 10px; font-size: 13px; }
+    .pill { padding: 5px 8px; font-size: 12px; }
     #wanted-mini { width: 34px; height: 45px; border-width: 2px; }
-    button.ghost { width: 40px; height: 40px; padding: 0; font-size: 20px; }
+    button.ghost { width: 36px; height: 36px; padding: 0; font-size: 18px; flex: none; }
     .poster p { font-size: 15px; }
     .poster img { max-height: 55vh; }
     .card { padding: 20px; }
@@ -74,6 +75,18 @@
   @media (max-width: 380px) {
     #score { display: none; }
   }
+
+  .coffee-link { color: #ffd60a; font-weight: 700; text-decoration: none; }
+  .coffee-link.dark { color: #7a5c3e; }
+  .coffee-link:hover { text-decoration: underline; }
+  #coffee { z-index: 20; }
+  .coffee-card .qr { width: 200px; height: 200px; border: 0; margin: 6px 0; image-rendering: pixelated; }
+  .coffee-card code { display: block; font-size: 13px; background: #fff; border: 1px solid #d6c7a8; border-radius: 8px;
+    padding: 8px; word-break: break-all; user-select: all; margin: 6px 0; }
+  .coffee-actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .coffee-actions button { margin: 0; font-size: 15px; padding: 10px 16px; }
+  .btn-link { display: inline-block; border-radius: 999px; padding: 10px 16px; background: #14213d; color: #fff;
+    font-weight: 700; text-decoration: none; font-size: 15px; }
 
   #flash { position: fixed; pointer-events: none; font-weight: 900; font-size: 22px; color: #ff4d4d;
     text-shadow: 0 2px 4px #000; transition: opacity .6s, transform .6s; opacity: 0; z-index: 5; }
@@ -90,9 +103,24 @@
   <div class="spacer"></div>
   <button class="ghost" id="zoom-in">＋</button>
   <button class="ghost" id="zoom-out">－</button>
+  <button class="ghost coffee-open" title="Hívj meg egy kávéra">☕</button>
 </div>
 
 <div id="flash"></div>
+
+<div class="overlay hidden" id="coffee">
+  <div class="card coffee-card">
+    <h2>☕ Hívj meg egy kávéra!</h2>
+    <p>Ha tetszett a játék, Bitcoinnal támogathatod:</p>
+    <img src="btc-qr.png" alt="Bitcoin cím QR-kódja" class="qr">
+    <code id="btc-addr">3PVKL42aNUGukQf1S3iXB88cUk19QxbZY2</code>
+    <div class="coffee-actions">
+      <button id="btc-copy">Cím másolása</button>
+      <a class="btn-link" href="bitcoin:3PVKL42aNUGukQf1S3iXB88cUk19QxbZY2">Megnyitás tárcában</a>
+    </div>
+    <p><a href="#" id="coffee-close" class="coffee-link dark">Bezárás</a></p>
+  </div>
+</div>
 
 <div class="overlay" id="start">
   <div class="poster">
@@ -100,6 +128,7 @@
     <p>Valahol elbújt a tömegben. Keresd meg és kattints az arcára!</p>
     <p><small>Húzd a térképet · görgő / csípés / ＋－ a nagyításhoz · rossz kattintás +5 mp</small></p>
     <button id="start-btn">Keresés indítása</button>
+    <p><a href="#" class="coffee-link coffee-open">☕ Tetszik? Hívj meg egy kávéra!</a></p>
   </div>
 </div>
 
@@ -108,6 +137,7 @@
     <h2 id="found-title">Megvan!</h2>
     <p id="found-text"></p>
     <button id="next-btn">Következő szint</button>
+    <p><a href="#" class="coffee-link coffee-open dark">☕ Hívj meg egy kávéra</a></p>
   </div>
 </div>
 

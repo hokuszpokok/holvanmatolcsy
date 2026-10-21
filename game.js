@@ -601,6 +601,26 @@
     startLevel();
   };
 
+  // ---------- coffee / BTC donation ----------
+  let pausedForCoffee = false;
+  document.querySelectorAll('.coffee-open').forEach((el) => el.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (state.playing) { state.playing = false; pausedForCoffee = true; }
+    $('coffee').classList.remove('hidden');
+  }));
+  $('coffee-close').onclick = (e) => {
+    e.preventDefault();
+    $('coffee').classList.add('hidden');
+    if (pausedForCoffee) { state.playing = true; pausedForCoffee = false; }
+  };
+  $('btc-copy').onclick = async () => {
+    const addr = $('btc-addr').textContent.trim();
+    try { await navigator.clipboard.writeText(addr); }
+    catch { const r = document.createRange(); r.selectNodeContents($('btc-addr')); getSelection().removeAllRanges(); getSelection().addRange(r); document.execCommand('copy'); }
+    $('btc-copy').textContent = 'Kimásolva ✓';
+    setTimeout(() => { $('btc-copy').textContent = 'Cím másolása'; }, 2000);
+  };
+
   function updateHud() {
     $('level').textContent = `${state.level}. szint`;
     $('timer').textContent = `⏱ ${fmt(state.time)} mp`;
